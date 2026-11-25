@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101b35">
+<title>TILATA SMART QR PAYMENT PRO</title>
+
+<style>
+:root {
+--bg:#0b1224;
+--panel:#141f38;
+--blue:#2463eb;
+--green:#16a34a;
+--text:#f5f7ff;
+--muted:#aab8d4;
+--line:#2a3b60;
+}
+
+* {
+box-sizing:border-box;
+}
+
+body {
+margin:0;
+background:linear-gradient(145deg,#081225,#18284a);
+color:var(--text);
+font:16px Arial,sans-serif;
+}
+
+header {
+padding:20px 16px;
+text-align:center;
+background:#0a1429;
+border-bottom:1px solid var(--line);
+}
+
+h1 {
+font-size:21px;
+margin:0 0 5px;
+}
+
+header p {
+color:var(--muted);
+font-size:12px;
+}
+
+main {
+max-width:900px;
+margin:auto;
+padding:14px;
+}
+
+.card {
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:16px;
+padding:16px;
+margin-bottom:14px;
+}
+
+h2 {
+font-size:17px;
+color:#9ec5ff;
+}
+
+label {
+font-size:13px;
+color:var(--muted);
+}
+
+input,select {
+width:100%;
+padding:12px;
+margin:8px 0 14px;
+background:#0b152b;
+border:1px solid var(--line);
+border-radius:10px;
+color:white;
+}
+
+button {
+border:0;
+padding:12px 15px;
+border-radius:10px;
+background:var(--blue);
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.secondary {
+background:#334766;
+}
+
+.green {
+background:var(--green);
+}
+
+.banks {
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:8px;
+}
+
+.bank {
+padding:14px;
+text-align:center;
+background:#0e1930;
+border:1px solid var(--line);
+border-radius:10px;
+font-size:13px;
+font-weight:bold;
+}
+
+.qrwrap {
+min-height:220px;
+display:grid;
+place-items:center;
+background:white;
+border-radius:12px;
+padding:12px;
+color:#172033;
+}
+
+.qrwrap img {
+max-width:100%;
+max-height:300px;
+object-fit:contain;
+}
+
+.actions {
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
+.status {
+padding:12px;
+border-radius:10px;
+background:#0b152b;
+border:1px solid var(--line);
+margin-top:10px;
+}
+
+table {
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+}
+
+td,th {
+text-align:left;
+padding:9px 5px;
+border-bottom:1px solid var(--line);
+}
+
+footer {
+text-align:center;
+color:var(--muted);
+font-size:12px;
+padding:15px;
+}
+
+@media(max-width:560px) {
+header {
+position:static;
+}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🔊 TILATA SMART QR PAYMENT PRO</h1>
+<p>КЫРГЫЗСТАН · QR ТӨЛӨМ · ҮН БИЛДИРҮҮ</p>
+</header>
+
+<main>
+
+<section class="card">
+<h2>1. ТӨЛӨМ КАБЫЛ АЛУУ</h2>
+
+<div class="banks">
+<div class="bank">🟢 MBANK</div>
+<div class="bank">🔴 OPTIMA BANK</div>
+<div class="bank">🔵 BAKAI BANK</div>
+<div class="bank">🟩 ЭЛДИК БАНК</div>
+<div class="bank">🔷 DEMIRBANK</div>
+<div class="bank">🔴 O!BANK</div>
+</div>
+</section>
+
+<section class="card">
+<h2>2. QR КОД ЖҮКТӨӨ</h2>
+
+<label>Банкты танда</label>
+
+<select id="bank">
+<option>MBANK</option>
+<option>Optima Bank</option>
+<option>BAKAI BANK</option>
+<option>Элдик Банк</option>
+<option>DemirBank</option>
+<option>O!Bank</option>
+</select>
+
+<label>QR сүрөтүн танда</label>
+
+<input type="file" id="qrFile" accept="image/*">
+
+<div class="qrwrap" id="qrBox">
+QR сүрөтү азырынча жүктөлө элек
+</div>
+
+<div class="actions">
+<button onclick="saveQR()">QR САКТОО</button>
+<button class="secondary" onclick="clearQR()">ТАЗАЛОО</button>
+</div>
+</section>
+
+<section class="card">
+<h2>3. ТӨЛӨМДҮ ТЕКШЕРҮҮ</h2>
+
+<label>Сервердин API дареги</label>
+<input id="apiUrl" placeholder="https://your-server.com">
+
+<label>Төлөм суммасы (сом)</label>
+<input id="amount" type="number" value="500" min="1">
+
+<div class="actions">
+<button class="green" onclick="checkPayment()">
+ТӨЛӨМДҮ ТЕКШЕРҮҮ
+</button>
+
+<button class="secondary" onclick="demoVoice()">
+ДЕМО ҮН
+</button>
+</div>
+
+<div class="status" id="status">
+Статус: текшерүү күтүлүүдө.
+</div>
+</section>
+
+<section class="card">
+<h2>4. ESP32-S3 БАЙЛАНЫШ</h2>
+
+<label>ESP32 сервер дареги</label>
+
+<input id="deviceApi"
+placeholder="https://your-server.com">
+
+<button onclick="saveSettings()">
+САКТОО
+</button>
+
+<button class="secondary" onclick="testVoice()">
+ҮНДҮ ТЕКШЕРҮҮ
+</button>
+</section>
+
+<section class="card">
+<h2>5. АКЫРКЫ ТӨЛӨМДӨР</h2>
+
+<table>
+<thead>
+<tr>
+<th>Убакыт</th>
+<th>Сумма</th>
+<th>Статус</th>
+</tr>
+</thead>
+
+<tbody id="history">
+<tr>
+<td colspan="3">Азырынча маалымат жок</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<footer>
+TILATA SMART QR PAYMENT PRO<br>
+ACODE + GITHUB PAGES
+</footer>
+
+</main>
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+let qrData = localStorage.getItem("tilata_qr") || "";
+
+let historyItems = JSON.parse(
+localStorage.getItem("tilata_history") || "[]"
+);
+
+function showQR() {
+const box = $("qrBox");
+box.replaceChildren();
+
+if(qrData) {
+const img = document.createElement("img");
+img.src = qrData;
+img.alt = "QR код";
+box.appendChild(img);
+} else {
+box.textContent = "QR сүрөтү азырынча жүктөлө элек";
+}
+}
+
+$("qrFile").addEventListener("change", e => {
+const file = e.target.files[0];
+
+if(!file) return;
+
+if(file.size > 3 * 1024 * 1024) {
+alert("Сүрөт 3 MB ашпасын");
+return;
+}
+
+const reader = new FileReader();
+
+reader.onload = () => {
+qrData = reader.result;
+showQR();
+};
+
+reader.readAsDataURL(file);
+});
+
+function saveQR() {
+if(!qrData) {
+alert("Адегенде QR тандаңыз");
+return;
+}
+
+try {
+localStorage.setItem("tilata_qr", qrData);
+alert("QR сакталды!");
+} catch(e) {
+alert("Сактагыч толуп калды");
+}
+}
+
+function clearQR() {
+qrData = "";
+localStorage.removeItem("tilata_qr");
+showQR();
+}
+
+function say(text) {
+if(!("speechSynthesis" in window)) {
+alert(text);
+return;
+}
+
+speechSynthesis.cancel();
+
+const msg = new SpeechSynthesisUtterance(text);
+msg.lang = "ky-KG";
+msg.rate = 0.88;
+
+speechSynthesis.speak(msg);
+}
+
+function demoVoice() {
+const amount = $("amount").value || 500;
+
+say(amount + " сом. Бул тесттик үн. Реалдуу төлөм ырасталган жок.");
+}
+
+function testVoice() {
+say("ТИЛАТА төлөм системасы даяр.");
+}
+
+function saveSettings() {
+localStorage.setItem(
+"tilata_api",
+$("apiUrl").value.trim()
+);
+
+localStorage.setItem(
+"tilata_device_api",
+$("deviceApi").value.trim()
+);
+
+alert("Даректер сакталды!");
+}
+
+function renderHistory() {
+const tbody = $("history");
+
+tbody.replaceChildren();
+
+if(historyItems.length === 0) {
+tbody.innerHTML =
+'<tr><td colspan="3">Азырынча маалымат жок</td></tr>';
+return;
+}
+
+historyItems.slice(0,10).forEach(item => {
+const tr = document.createElement("tr");
+
+const time = document.createElement("td");
+time.textContent = new Date(item.time).toLocaleString();
+
+const amount = document.createElement("td");
+amount.textContent = Number(item.amount) + " сом";
+
+const status = document.createElement("td");
+status.textContent = item.status;
+
+tr.append(time,amount,status);
+tbody.appendChild(tr);
+});
+}
+
+async function checkPayment() {
+
+const base = $("apiUrl").value.trim().replace(/\/$/,"");
+
+if(!base) {
+$("status").textContent = "Сервердин дарегин киргизиңиз.";
+return;
+}
+
+$("status").textContent = "Текшерилип жатат...";
+
+try {
+
+const response = await fetch(
+base + "/api/payment/latest",
+{cache:"no-store"}
+);
+
+if(!response.ok) {
+throw new Error("HTTP " + response.status);
+}
+
+const data = await response.json();
+const payment = data.payment;
+
+if(payment && payment.status === "paid") {
+
+$("status").textContent =
+"Ырасталды: " + payment.amount + " сом";
+
+say(payment.amount + " сом төлөм түштү");
+
+historyItems.unshift({
+time: payment.time || Date.now(),
+amount: payment.amount,
+status: "Ырасталды"
+});
+
+historyItems = historyItems.slice(0,20);
+
+localStorage.setItem(
+"tilata_history",
+JSON.stringify(historyItems)
+);
+
+renderHistory();
+
+} else {
+
+$("status").textContent =
+"Азырынча ырасталган төлөм жок.";
+
+}
+
+} catch(error) {
+
+$("status").textContent =
+"Серверге туташкан жок: " + error.message;
+
+}
+
+}
+
+$("apiUrl").value =
+localStorage.getItem("tilata_api") || "";
+
+$("deviceApi").value =
+localStorage.getItem("tilata_device_api") || "";
+
+showQR();
+renderHistory();
+
+</script>
+
+</body>
+</html>
