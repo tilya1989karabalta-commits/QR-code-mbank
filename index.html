@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESP32-S3 АССИСТЕНТ</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #1e2330; color: #d8dee9; font-family: system-ui, sans-serif; line-height: 1.55; }
+  header { padding: 18px 14px 12px; background: #161a24; text-align: center; position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0; font-size: 1.15rem; letter-spacing: .5px; }
+  header p { margin: 2px 0 10px; font-size: .75rem; color: #9aa4b8; letter-spacing: 1.5px; }
+  nav { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  nav button { background: #2b3347; color: #d8dee9; border: 0; border-radius: 8px; padding: 9px 14px; font-size: .85rem; }
+  nav button.active { background: #5e81ac; color: #fff; }
+  main { display: none; padding: 14px; max-width: 760px; margin: 0 auto; }
+  main.show { display: block; }
+  .panel { background: #161a24; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  h3 { margin: 0 0 10px; font-size: 1rem; color: #88c0d0; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #2b3347; }
+  th { color: #9aa4b8; font-weight: 600; }
+  td.pin { font-family: ui-monospace, Menlo, Consolas, monospace; color: #a3be8c; }
+  .warn { background: #3b2f2f; border-left: 3px solid #bf616a; padding: 10px 12px; border-radius: 6px; font-size: .88rem; margin-top: 10px; }
+  .note { background: #26303f; border-left: 3px solid #5e81ac; padding: 10px 12px; border-radius: 6px; font-size: .88rem; margin-top: 10px; }
+  pre { margin: 0; padding: 12px; background: #11141c; border-radius: 8px; overflow: auto; max-height: 460px; font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+  .copy { background: #5e81ac; color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font-size: .9rem; margin-bottom: 10px; }
+  .copy.ok { background: #6a9955; }
+  label { display: block; font-size: .85rem; color: #9aa4b8; margin: 10px 0 4px; }
+  input { width: 100%; padding: 11px; background: #11141c; color: #d8dee9; border: 1px solid #2b3347; border-radius: 8px; font-size: 1rem; }
+  ol { padding-left: 20px; margin: 6px 0; }
+  li { margin-bottom: 6px; }
+  code { background: #11141c; padding: 1px 6px; border-radius: 4px; color: #ebcb8b; font-size: .85em; }
+  #flash { display: none; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ESP32-S3 АССИСТЕНТ</h1>
+  <p>ТУТАШТЫРУУ · КОД · GITHUB · ЖҮКТӨӨ</p>
+  <nav>
+    <button id="b-schema" class="active" onclick="show('schema')">СХЕМА</button>
+    <button id="b-code" onclick="show('code')">КОД</button>
+    <button id="b-github" onclick="show('github')">GITHUB</button>
+    <button id="b-flash" onclick="show('flash')">ЖҮКТӨӨ</button>
+  </nav>
+</header>
+
+<!-- 1. СХЕМА -->
+<main id="schema" class="show">
+  <div class="panel">
+    <h3>1. INMP441 микрофону</h3>
+    <table>
+      <tr><th>Микрофон пини</th><th>ESP32-S3</th></tr>
+      <tr><td class="pin">VDD</td><td class="pin">3V3</td></tr>
+      <tr><td class="pin">GND</td><td class="pin">GND</td></tr>
+      <tr><td class="pin">L/R</td><td class="pin">GND</td></tr>
+      <tr><td class="pin">SCK</td><td class="pin">GPIO4</td></tr>
+      <tr><td class="pin">WS</td><td class="pin">GPIO5</td></tr>
+      <tr><td class="pin">SD</td><td class="pin">GPIO6</td></tr>
+    </table>
+    <div class="warn">VDD'ны 5V'ка улаба, микрофон күйүп калышы мүмкүн.</div>
+  </div>
+
+  <div class="panel">
+    <h3>2. MAX98357A күчөткүчү (келгенде)</h3>
+    <table>
+      <tr><th>Күчөткүч пини</th><th>ESP32-S3</th></tr>
+      <tr><td class="pin">VIN</td><td class="pin">5V</td></tr>
+      <tr><td class="pin">GND</td><td class="pin">GND</td></tr>
+      <tr><td class="pin">BCLK</td><td class="pin">GPIO15</td></tr>
+      <tr><td class="pin">LRC</td><td class="pin">GPIO16</td></tr>
+      <tr><td class="pin">DIN</td><td class="pin">GPIO17</td></tr>
+      <tr><td class="pin">GAIN, SD</td><td>бош калат</td></tr>
+    </table>
+    <div class="note">Динамиктин эки зымы күчөткүчтүн жашыл клеммасына (+ жана −) кысылат.</div>
+  </div>
+
+  <div class="panel">
+    <h3>3. Кубат</h3>
+    <ol>
+      <li>5V Type-C кабель, 1A же 2A заряддагыч.</li>
+      <li>Бардык GND бири-бирине туташсын.</li>
+      <li>Туташтырып жатканда кабелди сайбай тур, эң акырында сай.</li>
+      <li>Эки булактан бир убакта кубат бербе.</li>
+    </ol>
+  </div>
+</main>
+
+<!-- 2. КОД -->
+<main id="code">
+  <div class="panel">
+    <h3>inmp441_test/inmp441_test.ino</h3>
+    <button class="copy" onclick="copyText(INO, this)">Баарын көчүрүү</button>
+    <pre id="ino"></pre>
+    <div class="note">Бул микрофон сыноосу: Serial Monitor'до (115200) үн деңгээли жана <code>#</code> сызыгы көрүнөт.</div>
+  </div>
+</main>
+
+<!-- 3. GITHUB -->
+<main id="github">
+  <div class="panel">
+    <h3>GitHub'ка салуу (2 гана файл)</h3>
+    <ol>
+      <li>github.com'до жаңы репозиторий ач (мисалы <code>esp32-voice</code>).</li>
+      <li><code>Add file → Create new file</code>. Аты: <code>inmp441_test/inmp441_test.ino</code>. Мазмуну: КОД бөлүмүндөгү код. Commit бас.</li>
+      <li>Дагы бир жаңы файл. Аты: <code>.github/workflows/build.yml</code>. Мазмуну: төмөндөгү текст. Commit бас.</li>
+      <li><code>Settings → Pages → Source → GitHub Actions</code> танда.</li>
+      <li><code>Actions</code> табында жашыл белги чыкканча күт (3–5 мүнөт). Кызыл болсо, ката текстин мага жибер.</li>
+    </ol>
+  </div>
+  <div class="panel">
+    <h3>.github/workflows/build.yml</h3>
+    <button class="copy" onclick="copyText(YML, this)">Баарын көчүрүү</button>
+    <pre id="yml"></pre>
+  </div>
+</main>
+
+<!-- 4. ЖҮКТӨӨ -->
+<main id="flash-sec">
+  <div class="panel">
+    <h3>ESP32-S3ке жүктөө</h3>
+    <label>GitHub колдонуучу атың</label>
+    <input id="user" placeholder="мисалы: tilek123" autocapitalize="none">
+    <label>Репозиторий аты</label>
+    <input id="repo" value="esp32-voice" autocapitalize="none">
+    <button class="copy" style="margin-top:12px" onclick="makeFlasher()">Жүктөөчүнү даярда</button>
+
+    <esp-web-install-button id="flash">
+      <span slot="unsupported">Бул браузер колдобойт. Жаңы Chrome колдон.</span>
+      <span slot="not-allowed">Бул барак https аркылуу ачылышы керек.</span>
+    </esp-web-install-button>
+
+    <div class="note">ESP32-S3ту телефонго USB-C менен туташтыр да, "Install" бас. Порт көрүнбөсө, BOOT баскычын басып турып RESET бас, анан BOOT'ту коё бер.</div>
+    <div class="warn">Бул барак интернет менен иштейт. Android Chrome'до USB аркылуу жүктөө версияга жараша иштейт. Иштебесе, компьютердеги Chrome колдон.</div>
+  </div>
+</main>
+
+<script>
+var INO = "// INMP441 микрофонун ESP32-S3 менен сыноо\n// Туташтыруу:\n//   INMP441 VDD -> 3V3\n//   INMP441 GND -> GND\n//   INMP441 L/R -> GND\n//   INMP441 SCK -> GPIO4\n//   INMP441 WS  -> GPIO5\n//   INMP441 SD  -> GPIO6\n//\n// Serial Monitor: 115200 baud (\"USB\" деп жазылган Type-C порт аркылуу)\n\n#include <driver/i2s.h>\n\n#define I2S_PORT   I2S_NUM_0\n#define PIN_SCK    4\n#define PIN_WS     5\n#define PIN_SD     6\n\n#define SAMPLE_RATE   16000\n#define BLOCK_SAMPLES 256\n\nint32_t samples[BLOCK_SAMPLES];\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  Serial.println(\"INMP441 сыноо башталды\");\n\n  i2s_config_t cfg = {\n    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),\n    .sample_rate = SAMPLE_RATE,\n    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,\n    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,\n    .communication_format = I2S_COMM_FORMAT_STAND_I2S,\n    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,\n    .dma_buf_count = 4,\n    .dma_buf_len = BLOCK_SAMPLES,\n    .use_apll = false,\n    .tx_desc_auto_clear = false,\n    .fixed_mclk = 0\n  };\n\n  i2s_pin_config_t pins = {\n    .mck_io_num = I2S_PIN_NO_CHANGE,\n    .bck_io_num = PIN_SCK,\n    .ws_io_num = PIN_WS,\n    .data_out_num = I2S_PIN_NO_CHANGE,\n    .data_in_num = PIN_SD\n  };\n\n  if (i2s_driver_install(I2S_PORT, &cfg, 0, NULL) != ESP_OK) {\n    Serial.println(\"I2S орнотууда ката чыкты\");\n    while (true) delay(1000);\n  }\n  if (i2s_set_pin(I2S_PORT, &pins) != ESP_OK) {\n    Serial.println(\"I2S пиндерин коюуда ката чыкты\");\n    while (true) delay(1000);\n  }\n  Serial.println(\"Даяр. Микрофонго сүйлө же кол чап.\");\n}\n\nvoid loop() {\n  size_t bytesRead = 0;\n  i2s_read(I2S_PORT, samples, sizeof(samples), &bytesRead, portMAX_DELAY);\n  int n = bytesRead / sizeof(int32_t);\n  if (n == 0) return;\n\n  // INMP441 24 бит берет, 32 биттик слоттун жогорку бөлүгүндө\n  long long sum = 0;\n  for (int i = 0; i < n; i++) {\n    samples[i] >>= 8;\n    sum += samples[i];\n  }\n  long mean = sum / n;\n\n  long long absSum = 0;\n  for (int i = 0; i < n; i++) {\n    long v = samples[i] - mean;\n    absSum += (v < 0 ? -v : v);\n  }\n  long level = absSum / n;\n\n  // Үн деңгээлин сызык менен көрсөтөт\n  int bars = level / 1000;\n  if (bars > 50) bars = 50;\n\n  Serial.print(level);\n  Serial.print(\"\\t\");\n  for (int i = 0; i < bars; i++) Serial.print('#');\n  Serial.println();\n\n  delay(50);\n}\n";
+var YML = "name: Build ESP32-S3\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\npermissions:\n  contents: read\n  pages: write\n  id-token: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: arduino/setup-arduino-cli@v2\n\n      - name: ESP32 core орнотуу\n        run: |\n          arduino-cli config init\n          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json\n          arduino-cli core update-index\n          arduino-cli core install esp32:esp32\n\n      - name: Компиляция\n        run: |\n          arduino-cli compile \\\n            --fqbn esp32:esp32:esp32s3:CDCOnBoot=cdc \\\n            --export-binaries \\\n            --output-dir build \\\n            inmp441_test\n\n      - name: Жарыялоого даярдоо\n        run: |\n          mkdir -p site\n          cp build/inmp441_test.ino.merged.bin site/firmware.bin\n          echo \"firmware\" > site/index.html\n          ls -l site\n\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: site\n\n  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    environment:\n      name: github-pages\n      url: ${{ steps.deployment.outputs.page_url }}\n    steps:\n      - id: deployment\n        uses: actions/deploy-pages@v4\n";
+document.getElementById("ino").textContent = INO;
+document.getElementById("yml").textContent = YML;
+
+function show(id) {
+  ["schema", "code", "github", "flash"].forEach(function (n) {
+    var sec = document.getElementById(n === "flash" ? "flash-sec" : n);
+    sec.className = (n === id) ? "show" : "";
+    document.getElementById("b-" + n).className = (n === id) ? "active" : "";
+  });
+  window.scrollTo(0, 0);
+}
+
+function done(btn) {
+  var old = btn.getAttribute("data-t") || btn.textContent;
+  btn.setAttribute("data-t", old);
+  btn.textContent = "Көчүрүлдү";
+  btn.className = "copy ok";
+  setTimeout(function () { btn.textContent = old; btn.className = "copy"; }, 1500);
+}
+function copyText(text, btn) {
+  function fallback() {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(btn); } catch (e) { btn.textContent = "Ката: кол менен танда"; }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function () { done(btn); }, fallback);
+  } else {
+    fallback();
+  }
+}
+
+function makeFlasher() {
+  var u = document.getElementById("user").value.trim().toLowerCase();
+  var r = document.getElementById("repo").value.trim();
+  if (!u || !r) { alert("Колдонуучу атын жана репозиторий атын жаз"); return; }
+  var manifest = {
+    name: "ESP32-S3 Ассистент",
+    version: "1",
+    new_install_prompt_erase: false,
+    builds: [{
+      chipFamily: "ESP32-S3",
+      parts: [{ path: "https://" + u + ".github.io/" + r + "/firmware.bin", offset: 0 }]
+    }]
+  };
+  var blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+  var btn = document.getElementById("flash");
+  btn.setAttribute("manifest", URL.createObjectURL(blob));
+  btn.style.display = "block";
+}
+</script>
+</body>
+</html>
